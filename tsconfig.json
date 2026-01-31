@@ -26,9 +26,14 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "types",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
+  
+  // "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "types"],
+
+
   "exclude": ["node_modules"]
 }
