@@ -5,9 +5,7 @@ import bcrypt from "bcrypt";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-/**
- * ADD OFFICER (ADMIN ONLY)
- */
+
 export async function POST(req: Request) {
   try {
     await connectDB();

@@ -12,7 +12,7 @@ export async function GET(
   try {
     await connectDB();
 
-    // ✅ REQUIRED in Next 15
+    
     const { id } = await context.params;
 
     const caseData = await Case.findById(id).populate(

@@ -17,7 +17,7 @@ const CaseSchema = new Schema({
     ref: "User"
   },
 
-  // ✅ ADD THIS (denormalized for reports)
+ 
   investigatingOfficerId: {
     type: String
   },

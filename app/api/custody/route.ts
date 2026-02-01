@@ -7,9 +7,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import mongoose from "mongoose";
 
-/**
- * MOVE PROPERTY (ADMIN & OFFICER)
- */
 export async function POST(req: Request) {
   try {
     await connectDB();
@@ -26,12 +23,12 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { propertyId, toLocation, purpose, remarks } = body;
 
-    // Validate ObjectId
+    
     if (!mongoose.Types.ObjectId.isValid(propertyId)) {
       return NextResponse.json({ error: "Invalid propertyId" }, { status: 400 });
     }
 
-    // Get property
+   
     const property = await Property.findById(propertyId);
     if (!property) {
       return NextResponse.json({ error: "Property not found" }, { status: 404 });
@@ -39,7 +36,7 @@ export async function POST(req: Request) {
 
     const fromLocation = property.location;
 
-    // 1. Create custody log
+ 
     const custodyLog = await CustodyLog.create({
       propertyId,
       fromLocation,
@@ -49,11 +46,11 @@ export async function POST(req: Request) {
       remarks
     });
 
-    // 2. Update property location
+    
     property.location = toLocation;
     await property.save();
 
-    // 3. Audit log
+   
     await AuditLog.create({
       actionType: "PROPERTY_MOVED",
       entityType: "PROPERTY",
@@ -77,9 +74,7 @@ export async function POST(req: Request) {
   }
 }
 
-/**
- * GET CUSTODY HISTORY
- */
+
 export async function GET(req: Request) {
   await connectDB();
 

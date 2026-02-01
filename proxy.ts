@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from "next/server";
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // ✅ Allow public routes
   if (
     pathname.startsWith("/login") ||
     pathname.startsWith("/api/auth") ||
@@ -18,7 +17,7 @@ export async function proxy(req: NextRequest) {
 
   const token = await getToken({ req });
 
-  // 🔒 Protect all other routes
+  
   if (!token) {
     return NextResponse.redirect(new URL("/login", req.url));
   }

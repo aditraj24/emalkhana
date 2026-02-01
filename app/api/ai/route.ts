@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
-// Initialize Gemini
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
@@ -12,9 +12,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
     }
 
-    // Initialize Model
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash-lite", // Note: gemini-2.0-flash is current best for speed
+      model: "gemini-2.5-flash-lite", 
       systemInstruction: "You are a professional assistant for the Jharkhand Police e-Malkhana system. Help officers with legal queries and digital evidence management.",
     });
 

@@ -6,7 +6,7 @@ interface PageProps {
 }
 
 export default async function CaseDetailsPage({ params }: PageProps) {
-  const { id } = await params; // ✅ REQUIRED in Next 15
+  const { id } = await params; 
 
   return (
     <div id="print-area">

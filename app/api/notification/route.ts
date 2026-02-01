@@ -4,9 +4,7 @@ import Notification from "@/models/Notification";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-/**
- * GET notifications for logged-in user
- */
+
 export async function GET() {
   await connectDB();
 

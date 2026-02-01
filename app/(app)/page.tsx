@@ -74,7 +74,7 @@ export default function Home() {
             <span className="font-semibold">New Case</span>
           </Link>
 
-          {/* Add Officer (ADMIN ONLY) */}
+          {/* Add Officer */}
           {session?.user.role === "ADMIN" && (
             <Link
               href="/admin/add-officer"

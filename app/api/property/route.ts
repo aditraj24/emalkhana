@@ -9,9 +9,7 @@ import { authOptions } from "@/lib/auth";
 import mongoose from "mongoose";
 import cloudinary from "@/lib/cloudinary";
 
-/**
- * ADD PROPERTY (ADMIN & OFFICER)
- */
+
 export async function POST(req: Request) {
   try {
     await connectDB();
@@ -26,7 +24,7 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    // 1. Validate caseId
+    
     if (!mongoose.Types.ObjectId.isValid(body.caseId)) {
       return NextResponse.json({ error: "Invalid caseId" }, { status: 400 });
     }
@@ -36,7 +34,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Case not found" }, { status: 404 });
     }
 
-    // 2. Upload image to Cloudinary
+   
     let photoUrl = "";
     if (body.imageBase64) {
       const upload = await cloudinary.uploader.upload(body.imageBase64, {
@@ -45,7 +43,7 @@ export async function POST(req: Request) {
       photoUrl = upload.secure_url;
     }
 
-    // 3. Create property
+    
     const property = await Property.create({
       caseId: body.caseId,
       category: body.category,
@@ -58,13 +56,13 @@ export async function POST(req: Request) {
       status: "IN_CUSTODY"
     });
 
-    // 4. Generate QR code
+    
     const qrData = `${process.env.NEXTAUTH_URL}/property/${property._id}`;
     const qrCode = await QRCode.toDataURL(qrData);
     property.qrCode = qrCode;
     await property.save();
 
-    // 5. Audit log
+  
     await AuditLog.create({
       actionType: "PROPERTY_ADDED",
       entityType: "PROPERTY",
@@ -84,12 +82,7 @@ export async function POST(req: Request) {
   }
 }
 
-/**
- * GET PROPERTIES
- * Supports:
- *  - ?caseId=xxx
- *  - ?status=IN_CUSTODY
- */
+
 export async function GET(req: Request) {
   try {
     await connectDB();

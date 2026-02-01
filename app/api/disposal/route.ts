@@ -8,9 +8,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import mongoose from "mongoose";
 
-/**
- * DISPOSE PROPERTY (ADMIN + OFFICER)
- */
+
 export async function POST(req: Request) {
   try {
     await connectDB();
@@ -27,7 +25,6 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { propertyId, disposalType, courtOrderRef, remarks } = body;
 
-    // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(propertyId)) {
       return NextResponse.json(
         { error: "Invalid propertyId" },
@@ -35,7 +32,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Get property
+    
     const property = await Property.findById(propertyId);
     if (!property) {
       return NextResponse.json(
@@ -44,7 +41,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1. Create disposal record
+   
     const disposal = await Disposal.create({
       propertyId,
       disposalType,
@@ -53,11 +50,11 @@ export async function POST(req: Request) {
       remarks,
     });
 
-    // 2. Update property status
+   
     property.status = "DISPOSED";
     await property.save();
 
-    // 3. Check if all properties of case are disposed
+    
     const remaining = await Property.countDocuments({
       caseId: property.caseId,
       status: { $ne: "DISPOSED" },
@@ -69,7 +66,7 @@ export async function POST(req: Request) {
       });
     }
 
-    // 4. Audit log
+    
     await AuditLog.create({
       actionType: "PROPERTY_DISPOSED",
       entityType: "PROPERTY",
@@ -93,9 +90,7 @@ export async function POST(req: Request) {
     );
   }
 }
-/**
- * GET DISPOSED PROPERTIES (ADMIN + OFFICER)
- */
+
 export async function GET() {
   try {
     await connectDB();

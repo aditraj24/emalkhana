@@ -6,8 +6,7 @@ export const metadata: Metadata = {
   title: "E-Malkhana",
   description: "Official Government Portal",
   icons: {
-    icon: "/jhpolice.png", // Moved inside the icons object
-    // Optional: add apple-touch-icon for mobile users
+    icon: "/jhpolice.png", 
     apple: "/jhpolice.png", 
   },
 };

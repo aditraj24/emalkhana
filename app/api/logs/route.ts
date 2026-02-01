@@ -4,9 +4,7 @@ import AuditLog from "@/models/AuditLog";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-/**
- * GET LOGS (ADMIN ONLY)
- */
+
 export async function GET(req: Request) {
   await connectDB();
 

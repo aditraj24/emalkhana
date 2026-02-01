@@ -4,9 +4,7 @@ import Case from "@/models/Case";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-/**
- * DASHBOARD METRICS (ADMIN & OFFICER)
- */
+
 export async function GET() {
   try {
     await connectDB();
