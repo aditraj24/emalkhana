@@ -7,10 +7,10 @@ A **secure, role-based digital evidence & property management platform** for pol
 
 deployed link: "https://jh-emalkhana.vercel.app"
  
-TO LOGIN AS ADMIN USE:-  id : ADMOO1
+TO LOGIN AS ADMIN USE:-  id : ADM001
                          pass : 123456
 
-TO LOGIN AS OFFICER USE:-  id : OFFOO1
+TO LOGIN AS OFFICER USE:-  id : OFF001
                          pass : 123456
 
 ONLY ADMIN CAN ADD OTHER ADMIN OR OFFICER
