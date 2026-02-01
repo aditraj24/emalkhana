@@ -9,7 +9,7 @@ import { authOptions } from "@/lib/auth";
 import mongoose from "mongoose";
 
 /**
- * DISPOSE PROPERTY (ADMIN ONLY)
+ * DISPOSE PROPERTY (ADMIN + OFFICER)
  */
 export async function POST(req: Request) {
   try {
@@ -17,10 +17,10 @@ export async function POST(req: Request) {
 
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== "ADMIN") {
+    if (!session || !["ADMIN", "OFFICER"].includes(session.user.role)) {
       return NextResponse.json(
-        { error: "Only admin can dispose property" },
-        { status: 403 }
+        { error: "Not authorized to dispose property" },
+        { status: 403 },
       );
     }
 
@@ -29,13 +29,19 @@ export async function POST(req: Request) {
 
     // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(propertyId)) {
-      return NextResponse.json({ error: "Invalid propertyId" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid propertyId" },
+        { status: 400 },
+      );
     }
 
     // Get property
     const property = await Property.findById(propertyId);
     if (!property) {
-      return NextResponse.json({ error: "Property not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Property not found" },
+        { status: 404 },
+      );
     }
 
     // 1. Create disposal record
@@ -44,7 +50,7 @@ export async function POST(req: Request) {
       disposalType,
       courtOrderRef,
       disposedBy: session.user.id,
-      remarks
+      remarks,
     });
 
     // 2. Update property status
@@ -54,12 +60,12 @@ export async function POST(req: Request) {
     // 3. Check if all properties of case are disposed
     const remaining = await Property.countDocuments({
       caseId: property.caseId,
-      status: { $ne: "DISPOSED" }
+      status: { $ne: "DISPOSED" },
     });
 
     if (remaining === 0) {
       await Case.findByIdAndUpdate(property.caseId, {
-        status: "DISPOSED"
+        status: "DISPOSED",
       });
     }
 
@@ -71,20 +77,46 @@ export async function POST(req: Request) {
       performedBy: session.user.id,
       newValue: {
         disposalType,
-        courtOrderRef
-      }
+        courtOrderRef,
+      },
     });
 
     return NextResponse.json(
       { message: "Property disposed successfully", disposal },
-      { status: 201 }
+      { status: 201 },
     );
-
   } catch (error) {
     console.error("Disposal error:", error);
     return NextResponse.json(
       { error: "Failed to dispose property" },
-      { status: 500 }
+      { status: 500 },
+    );
+  }
+}
+/**
+ * GET DISPOSED PROPERTIES (ADMIN + OFFICER)
+ */
+export async function GET() {
+  try {
+    await connectDB();
+
+    const disposedProperties = await Disposal.find()
+      .populate({
+        path: "propertyId",
+        populate: {
+          path: "caseId",
+          select: "crimeNumber year policeStation status",
+        },
+      })
+      .populate("disposedBy", "name officerId")
+      .sort({ createdAt: -1 });
+
+    return NextResponse.json(disposedProperties);
+  } catch (error) {
+    console.error("Get disposed properties error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch disposed properties" },
+      { status: 500 },
     );
   }
 }

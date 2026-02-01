@@ -10,7 +10,7 @@ export default function PrintButton({ caseId }: { caseId: string }) {
           hover:bg-[#1e293b] transition
         "
       >
-        🖨️ Print Report
+        Print Report
       </button>
     </div>
   );

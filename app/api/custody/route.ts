@@ -8,7 +8,7 @@ import { authOptions } from "@/lib/auth";
 import mongoose from "mongoose";
 
 /**
- * MOVE PROPERTY (MALKHANA ONLY)
+ * MOVE PROPERTY (ADMIN & OFFICER)
  */
 export async function POST(req: Request) {
   try {
@@ -16,21 +16,15 @@ export async function POST(req: Request) {
 
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== "MALKHANA") {
+    if (!session || !["ADMIN", "OFFICER"].includes(session.user.role)) {
       return NextResponse.json(
-        { error: "Only Malkhana can move property" },
+        { error: "Not authorized to move property" },
         { status: 403 }
       );
     }
 
     const body = await req.json();
-
-    const {
-      propertyId,
-      toLocation,
-      purpose,
-      remarks
-    } = body;
+    const { propertyId, toLocation, purpose, remarks } = body;
 
     // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(propertyId)) {
@@ -99,6 +93,6 @@ export async function GET(req: Request) {
     );
   }
 
-  const logs = await CustodyLog.find({ propertyId }).sort({ dateTime: 1 });
+  const logs = await CustodyLog.find({ propertyId }).sort({ createdAt: 1 });
   return NextResponse.json(logs);
 }

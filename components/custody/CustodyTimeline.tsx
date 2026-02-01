@@ -1,30 +1,44 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
-type Custody = {
+type CustodyLog = {
   _id: string;
-  from: string;
-  to: string;
+  fromLocation: string;
+  toLocation: string;
   purpose: string;
   remarks: string;
-  createdAt: string;
+  dateTime: string;
 };
 
 export default function CustodyTimeline() {
-  const [logs, setLogs] = useState<Custody[]>([]);
-  const [propertyId, setPropertyId] = useState("");
+  const params = useSearchParams();
+  const propertyId = params.get("propertyId");
 
-  const fetchLogs = async () => {
-    if (!propertyId) return;
-    const res = await fetch(`/api/custody?propertyId=${propertyId}`);
-    const data = await res.json();
-    setLogs(data);
-  };
+  const [logs, setLogs] = useState<CustodyLog[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchLogs();
+    if (!propertyId) return;
+
+    fetch(`/api/custody?propertyId=${propertyId}`)
+      .then((r) => r.json())
+      .then(setLogs)
+      .finally(() => setLoading(false));
   }, [propertyId]);
+
+  if (!propertyId) {
+    return (
+      <p className="text-center text-[#94A3B8]">
+        Select a property to view custody
+      </p>
+    );
+  }
+
+  if (loading) {
+    return <p className="text-center text-[#94A3B8]">Loading custody...</p>;
+  }
 
   return (
     <div className="bg-white p-6 rounded-lg shadow max-w-3xl mx-auto">
@@ -32,28 +46,23 @@ export default function CustodyTimeline() {
         Custody Timeline
       </h2>
 
-      <input
-        placeholder="Enter Property ID"
-        className="w-full border px-3 py-2 rounded mb-4"
-        value={propertyId}
-        onChange={(e) => setPropertyId(e.target.value)}
-      />
-
       {logs.length === 0 ? (
         <p className="text-sm text-[#94A3B8]">No custody logs found</p>
       ) : (
-        <ol className="border-l border-[#94A3B8] pl-4 space-y-4">
+        <ol className="border-l-2 border-[#D5C58A] pl-4 space-y-4">
           {logs.map((log) => (
             <li key={log._id}>
-              <div className="text-sm">
-                <p><b>From:</b> {log.from}</p>
-                <p><b>To:</b> {log.to}</p>
-                <p><b>Purpose:</b> {log.purpose}</p>
-                <p className="text-[#94A3B8] text-xs">
-                  {new Date(log.createdAt).toLocaleString()}
+              <p className="font-medium text-sm">
+                {log.fromLocation} → {log.toLocation}
+              </p>
+              <p className="text-xs text-gray-500">
+                {new Date(log.dateTime).toLocaleString()} | {log.purpose}
+              </p>
+              {log.remarks && (
+                <p className="text-xs text-gray-600 mt-1">
+                  {log.remarks}
                 </p>
-                <p className="text-sm mt-1">{log.remarks}</p>
-              </div>
+              )}
             </li>
           ))}
         </ol>

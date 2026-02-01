@@ -1,3 +1,64 @@
+// import { NextResponse } from "next/server";
+// import { connectDB } from "@/lib/db";
+// import Case from "@/models/Case";
+// import AuditLog from "@/models/AuditLog";
+// import { getServerSession } from "next-auth";
+// import { authOptions } from "@/lib/auth";
+
+// /**
+//  * CREATE CASE (ADMIN & OFFICER)
+//  */
+// export async function POST(req: Request) {
+//   try {
+//     await connectDB();
+
+//     const session = await getServerSession(authOptions);
+
+//     if (!session || !["ADMIN", "OFFICER"].includes(session.user.role)) {
+//       return NextResponse.json(
+//         { error: "Not authorized to create cases" },
+//         { status: 403 },
+//       );
+//     }
+
+//     const body = await req.json();
+
+//     const newCase = await Case.create({
+//       policeStation: body.policeStation,
+//       crimeNumber: body.crimeNumber,
+//       year: body.year,
+//       actLaw: body.actLaw,
+//       sections: body.sections,
+//       investigatingOfficer: session.user.id,
+//       status: "PENDING",
+//     });
+
+//     await AuditLog.create({
+//       actionType: "CASE_CREATED",
+//       entityType: "CASE",
+//       entityId: newCase._id,
+//       performedBy: session.user.id,
+//       newValue: newCase,
+//     });
+//     return NextResponse.json(newCase, { status: 201 });
+//   } catch (error: any) {
+//     console.error("Create case error:", error);
+//     return NextResponse.json(
+//       { error: "Failed to create case" },
+//       { status: 500 },
+//     );
+//   }
+// }
+
+// /**
+//  * GET ALL CASES
+//  */
+// export async function GET() {
+//   await connectDB();
+
+//   const cases = await Case.find().sort({ createdAt: -1 });
+//   return NextResponse.json(cases);
+// }
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Case from "@/models/Case";
@@ -6,8 +67,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 /**
- * CREATE CASE
- * Only OFFICER can create case
+ * CREATE CASE (ADMIN & OFFICER)
  */
 export async function POST(req: Request) {
   try {
@@ -15,23 +75,39 @@ export async function POST(req: Request) {
 
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== "OFFICER") {
+    if (!session || !["ADMIN", "OFFICER"].includes(session.user.role)) {
       return NextResponse.json(
-        { error: "Only officers can create cases" },
-        { status: 403 }
+        { error: "Not authorized to create cases" },
+        { status: 403 },
       );
     }
 
     const body = await req.json();
 
+    // const newCase = await Case.create({
+    //   policeStation: body.policeStation,
+    //   crimeNumber: body.crimeNumber,
+    //   year: body.year,
+    //   firDate: body.firDate,
+    //   seizureDate: body.seizureDate,
+    //   actLaw: body.actLaw,
+    //   sections: body.sections,
+    //   investigatingOfficer: session.user.id,
+    //   status: "PENDING",
+    // });
     const newCase = await Case.create({
       policeStation: body.policeStation,
       crimeNumber: body.crimeNumber,
       year: body.year,
+      firDate: body.firDate,
+      seizureDate: body.seizureDate,
       actLaw: body.actLaw,
       sections: body.sections,
+
       investigatingOfficer: session.user.id,
-      status: "PENDING"
+      investigatingOfficerId: session.user.officerId, // ✅ ADD THIS
+
+      status: "PENDING",
     });
 
     await AuditLog.create({
@@ -39,27 +115,48 @@ export async function POST(req: Request) {
       entityType: "CASE",
       entityId: newCase._id,
       performedBy: session.user.id,
-      newValue: newCase
+      newValue: newCase,
     });
 
     return NextResponse.json(newCase, { status: 201 });
-
-  } catch (error: any) {
+  } catch (error) {
     console.error("Create case error:", error);
-
     return NextResponse.json(
       { error: "Failed to create case" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 /**
- * GET ALL CASES
+ * GET ALL CASES (with search + populate)
  */
-export async function GET() {
-  await connectDB();
+export async function GET(req: Request) {
+  try {
+    await connectDB();
 
-  const cases = await Case.find().sort({ createdAt: -1 });
-  return NextResponse.json(cases);
+    const { searchParams } = new URL(req.url);
+    const search = searchParams.get("search");
+
+    const query: any = {};
+
+    if (search) {
+      query.$or = [
+        { crimeNumber: { $regex: search, $options: "i" } },
+        { policeStation: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const cases = await Case.find(query)
+      .populate("investigatingOfficer", "name officerId")
+      .sort({ createdAt: -1 });
+
+    return NextResponse.json(cases);
+  } catch (error) {
+    console.error("Get cases error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch cases" },
+      { status: 500 },
+    );
+  }
 }

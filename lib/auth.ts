@@ -46,25 +46,20 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.id = (user as any).id; // ✅ ADD THIS
         token.role = (user as any).role;
         token.officerId = (user as any).officerId;
       }
       return token;
     },
 
-    async signIn() {
-      await fetch(`${process.env.NEXTAUTH_URL}/api/cron/pending-cases`);
-      return true;
-    },
-    
-
     async session({ session, token }) {
+      session.user.id = token.id as string; // ✅ ADD THIS
       session.user.role = token.role as string;
       session.user.officerId = token.officerId as string;
       return session;
     },
   },
-
   pages: {
     signIn: "/login",
   },

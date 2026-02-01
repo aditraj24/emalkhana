@@ -1,3 +1,4 @@
+import AuthProvider from "@/components/providers/SessionProvider";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
@@ -5,12 +6,12 @@ export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
-})  {
+}) {
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <AuthProvider>
       <Navbar />
-      <main className="p-6">{children}</main>
+      <main className="p-6 bg-[#f8fafc] min-h-screen">{children}</main>
       <Footer />
-    </div>
+    </AuthProvider>
   );
 }

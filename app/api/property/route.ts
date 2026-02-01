@@ -10,16 +10,16 @@ import mongoose from "mongoose";
 import cloudinary from "@/lib/cloudinary";
 
 /**
- * ADD PROPERTY (OFFICER ONLY)
+ * ADD PROPERTY (ADMIN & OFFICER)
  */
 export async function POST(req: Request) {
   try {
     await connectDB();
 
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "OFFICER") {
+    if (!session || !["ADMIN", "OFFICER"].includes(session.user.role)) {
       return NextResponse.json(
-        { error: "Only officers can add property" },
+        { error: "Not authorized to add property" },
         { status: 403 }
       );
     }
@@ -36,11 +36,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Case not found" }, { status: 404 });
     }
 
-    // 2. Upload image to Cloudinary (if present)
+    // 2. Upload image to Cloudinary
     let photoUrl = "";
     if (body.imageBase64) {
       const upload = await cloudinary.uploader.upload(body.imageBase64, {
-        folder: "emalkhana/properties",
+        folder: "emalkhana/properties"
       });
       photoUrl = upload.secure_url;
     }
@@ -55,13 +55,12 @@ export async function POST(req: Request) {
       location: body.location,
       description: body.description,
       photoUrl,
-      status: "IN_CUSTODY",
+      status: "IN_CUSTODY"
     });
 
     // 4. Generate QR code
     const qrData = `${process.env.NEXTAUTH_URL}/property/${property._id}`;
     const qrCode = await QRCode.toDataURL(qrData);
-
     property.qrCode = qrCode;
     await property.save();
 
@@ -71,7 +70,7 @@ export async function POST(req: Request) {
       entityType: "PROPERTY",
       entityId: property._id,
       performedBy: session.user.id,
-      newValue: property,
+      newValue: property
     });
 
     return NextResponse.json(property, { status: 201 });
@@ -86,18 +85,43 @@ export async function POST(req: Request) {
 }
 
 /**
- * GET PROPERTIES OF A CASE
+ * GET PROPERTIES
+ * Supports:
+ *  - ?caseId=xxx
+ *  - ?status=IN_CUSTODY
  */
 export async function GET(req: Request) {
-  await connectDB();
+  try {
+    await connectDB();
 
-  const { searchParams } = new URL(req.url);
-  const caseId = searchParams.get("caseId");
+    const { searchParams } = new URL(req.url);
+    const caseId = searchParams.get("caseId");
+    const status = searchParams.get("status");
 
-  if (!caseId) {
-    return NextResponse.json({ error: "caseId is required" }, { status: 400 });
+    const query: any = {};
+
+    if (caseId) {
+      if (!mongoose.Types.ObjectId.isValid(caseId)) {
+        return NextResponse.json(
+          { error: "Invalid caseId" },
+          { status: 400 }
+        );
+      }
+      query.caseId = caseId;
+    }
+
+    if (status) {
+      query.status = status;
+    }
+
+    const properties = await Property.find(query).sort({ createdAt: -1 });
+    return NextResponse.json(properties);
+
+  } catch (error) {
+    console.error("Get property error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch properties" },
+      { status: 500 }
+    );
   }
-
-  const properties = await Property.find({ caseId });
-  return NextResponse.json(properties);
 }
