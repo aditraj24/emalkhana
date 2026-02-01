@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
 import "@/styles/print.css";
-
+import { Suspense } from "react";
 export const metadata: Metadata = {
   title: "E-Malkhana",
   description: "Official Government Portal",
@@ -21,7 +21,9 @@ export default function RootLayout({
     <html lang="en">
       <head>
       </head>
-      <body>{children}</body>
+      <Suspense fallback={<div>Loading...</div>}>
+        <body>{children}</body>
+      </Suspense>
     </html>
   );
 }
