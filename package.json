@@ -9,10 +9,12 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.9.0",
     "jspdf": "^4.0.0",
     "jspdf-autotable": "^5.0.7",
+    "lucide-react": "^0.563.0",
     "mongoose": "^9.1.5",
     "next": "16.1.6",
     "next-auth": "^4.24.13",

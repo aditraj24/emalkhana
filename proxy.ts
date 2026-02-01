@@ -10,7 +10,8 @@ export async function proxy(req: NextRequest) {
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon.ico")||
-    pathname.startsWith("/jhpolice.png")
+    pathname.startsWith("/jhpolice.png")||
+    pathname.startsWith("/cap.png")
   ) {
     return NextResponse.next();
   }
