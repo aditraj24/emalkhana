@@ -2,7 +2,7 @@
 
 A **secure, role-based digital evidence & property management platform** for police departments to manage seized properties, track chain of custody, generate QR codes, and maintain complete audit logs — built using **Next.js App Router + MongoDB + NextAuth**.
 
----one change--
+---
 
 
 deployed link: "https://jh-emalkhana.vercel.app"
